@@ -17,9 +17,13 @@ project:
     - file: chapters/chapter-4.md
     - file: chapters/chapter-5.md
     - file: chapters/chapter-6.md
-    
+
+
+
 site:
   template: book-theme
+  parts:
+    footer: footer.md
   options:
     logo_text: "Made by Vladimir Sukhov"
     favicon: favicon-bio-image.ico
