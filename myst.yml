@@ -25,7 +25,7 @@ site:
   parts:
     footer: footer.md
   options:
-    logo_text: "Made by Vladimir Sukhov"
+    # logo_text: "Made by Vladimir Sukhov"
     favicon: favicon-bio-image.ico
     logo: bio-img.png
     logo_dark: bio-img-dark.png
