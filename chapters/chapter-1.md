@@ -7,16 +7,34 @@
 - Core image concepts: intensity, noise, contrast and histograms
 ```
 
+In recent years, biology has become increasingly spatial: it’s no longer enough to know what molecules are present—we also want to know where they are in tissue. This shift is reflected in the choices of Nature Methods “Method of the Year”: spatially resolved transcriptomics in 2020 and spatial proteomics in 2024.
+Both advances rely on images as the primary data source, which makes bioimage analysis not a “nice-to-have,” but the bridge between raw spatial maps and biological insight.
+
+::::{grid} 2
+:::{grid-item}
+[![nat-2024](https://media.springernature.com/w200/springer-static/cover-hires/journal/41592/21/12)](https://www.nature.com/articles/s41592-024-02565-3)
+:::
+:::{grid-item}
+[![nat-2020](https://media.springernature.com/w200/springer-static/cover-hires/journal/41592/18/1)](https://www.nature.com/articles/s41592-020-01042-x)
+:::
+::::
+
+
+```{admonition} Time-capsule note
+:class: dropdown
+:class:
+
+If you’re reading this from the future and these “Method of the Year” picks have been dethroned—congrats, science kept moving. In *our* timeline: **2020 = spatial transcriptomics**, **2024 = spatial proteomics**. Either way, the message still stands: biology is getting **more spatial**, and images are the data.
+```
+
+
+
+
 ## What is bioimage analysis?
 
-Bioimage analysis is the process of turning biological images (microscopy, histology slides, fluorescent images, etc.) into quantitative measurements.
+Bioimage analysis is the craft of turning biological images into numbers you can trust. A microscope gives you pixels; analysis gives you answers: how many cells, how big, how bright, how different across conditions.
 
-Think of a bioimage as a field of pixels. Your job is to translate it into a spreadsheet:
-
-- How many cells?
-- How big are they?
-- How bright is a protein marker inside each one?
-- How do these values change across conditions?
+A helpful way to think about it: an image is a crowded stadium photo. Your biological question is rarely “what does the stadium look like?”—it’s “how many people are there, where are they sitting, and what are they doing?” Bioimage analysis is the set of methods that turns that photo into a count, a map, and a table of measurements.
 
 **Typical workflow of bioimage analysis**
 1. Acquire image (microscope outputs a stack/series)
@@ -32,7 +50,29 @@ In this book the main focus is **Python**, because it's flexible, popular and in
 
 [![NumPy](https://img.shields.io/badge/NumPy-numerical%20python-informational?logo=numpy)](https://numpy.org/)
 [![SciPy](https://img.shields.io/badge/SciPy-filters%20%26%20transforms-informational?logo=scipy)](https://scipy.org/)
-[![pandas](https://img.shields.io/badge/pandas-tabular%20measurements-informational?logo=pandas)](https://pandas.pydata.org/)
+[![pandas](https://img.shields.io/badge/pandas-data%20frames-informational?logo=pandas)](https://pandas.pydata.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-deep%20learning-informational?logo=pytorch)](https://pytorch.org/)
 [![scikit-image](https://img.shields.io/badge/scikit-image%20processing-informational)](https://scikit-image.org/)
 [![opencv](https://img.shields.io/badge/OpenCV-image%20processing-informational?logo=opencv)](https://scikit-image.org/)
+
+## Images are arrays
+
+In Python, an image is usually a NumPy array. That means every pixel is just a number, and the whole image is a grid of numbers.
+
+A few common image "shapes" you may encounter:
+- A 2D grayscale image often looks like `(H, W)`.
+- A color image often looks like `(H, W, 3)`.
+- A z-stack (3D volume) often looks like `(Z, H, W)`.
+- A time series often looks like `(T, H, W)` or `(T, Z, H, W)`.
+
+```{note}
+Different tools store axes in different orders, so the first thing you’ll always check is: shape, dtype, min/max.
+```
+
+**Intensity and bit-depth**: Pixel values represent intensity (brightness). In microscopy, many images are 16-bit, which means values can go up to 65535. That’s one reason images can look “dark” by default: your display might be showing only a small slice of the available range.
+
+## Image segmentation
+
+Segmentation is where we draw boundaries so we can measure objects. Once you have a mask or labels, you can count cells, measure protein signal per cell, compare shapes, and track changes across conditions.
+
+In other words: segmentation is the bridge from pixels to biology.
