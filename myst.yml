@@ -3,14 +3,19 @@ version: 1
 project:
   id: 5ad8af82-23e7-471d-bece-dfff4ae43a56
   title: Bioimage Analysis
+  license:
+    content: CC-BY-4.0
+    code: MIT
   # description:
   # keywords: []
-  # authors: ["Vladimir Sukhov"]
+  authors:
+    - name: Vladimir Sukhov
+      github: vdsukhov
   # github:
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
   toc:
     - file: index.md
-    - file: chapters/chapter-1.md
+    - file: chapters/chapter-1.ipynb
     - file: chapters/chapter-2.md
     - file: chapters/chapter-3.md
     - file: chapters/chapter-4.md
