@@ -72,6 +72,45 @@ In this book the main focus is **Python**, because it's flexible, popular and in
 [![scikit-image](https://img.shields.io/badge/scikit-image%20processing-informational)](https://scikit-image.org/)
 [![opencv](https://img.shields.io/badge/OpenCV-image%20processing-informational?logo=opencv)](https://scikit-image.org/)
 
+## Set up Python environment
+
+Before we touch pixels, let’s make sure your tools are in place. Bioimage analysis tends to mix “scientific Python” (arrays, plots) with “image Python” (TIFF stacks, filters, segmentation). A clean environment keeps that mix from turning into dependency chaos.
+
+### Option A: `conda`
+
+Conda is popular in scientific imaging because it handles compiled dependencies smoothly.
+
+```bash
+# 1) Create a fresh environment
+conda create -n bioimg python=3.12 -y
+
+# 2) Activate it
+conda activate bioimg
+
+# 3) Install core packages for this book
+conda install -y numpy scipy pandas matplotlib scikit-image tifffile
+```
+
+### Option B: `venv` + `pip`
+
+If you’d rather avoid `conda`, use Python’s built-in environment tools.
+
+```bash
+python -m venv .venv
+
+# macOS/Linux
+source .venv/bin/activate
+
+# Windows (PowerShell)
+# .\.venv\Scripts\Activate.ps1
+```
+Then install packages:
+
+```bash
+pip install -U pip
+pip install numpy scipy pandas matplotlib scikit-image tifffile
+```
+
 ## Images are arrays
 
 In Python, an image is usually a NumPy array. That means every pixel is just a number, and the whole image is a grid of numbers.
