@@ -1,3 +1,20 @@
+---
+jupyter:
+  jupytext:
+    default_lexer: ipython3
+    formats: ipynb,md
+    text_representation:
+      extension: .md
+      format_name: markdown
+      format_version: '1.3'
+      jupytext_version: 1.19.1
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
+
+<!-- #region -->
 # Introduction to bioimage analysis
 
 
@@ -73,6 +90,19 @@ Different tools store axes in different orders, so the first thing you’ll alwa
 
 ## Image segmentation
 
-Segmentation is where we draw boundaries so we can measure objects. Once you have a mask or labels, you can count cells, measure protein signal per cell, compare shapes, and track changes across conditions.
+Image segmentation is a fundamental task in computer vision that involves partitioning an image into meaningful regions or segments. The goal is to simplify and organize visual information by grouping pixels with similar characteristics—such as color, intensity, or texture—into coherent structures that correspond to objects or areas of interest. By transforming raw pixel data into structured representations, image segmentation enables higher-level analysis and interpretation, serving as a critical step in applications such as medical imaging, autonomous driving, object recognition, and scene understanding.
 
-In other words: segmentation is the bridge from pixels to biology.
+
+### Types of image segmentation
+
+Image segmentation can generally be divided into two major types: semantic segmentation and instance segmentation.
+
+Semantic segmentation
+: Semantic segmentation is a computer vision task that assigns a class label to every pixel in an image, grouping pixels into categories such as cell, membrane or background. It provides pixel-level predictions but does not distinguish between separate objects of the same class--for example, all cells in an image are labeled simply as "cell", without differentiating individual cells.
+
+Instance segmentation
+: Instance segmentation extends semantic segmentation by not only classifying each pixel but also distinguishing between different instances of the same class. For example, instead of labeling all cells as one group, it identifies and separates each individual cell as a distinct object. This provides both pixel-level precision and object-level separation.
+
+
+
+<!-- #endregion -->
