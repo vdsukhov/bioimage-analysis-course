@@ -1,5 +1,7 @@
 # Bioimage analysis
 
+![codex](./chapters/images/akoya_codex.webp)
+
 Turn messy microscopy images into clean, measurable biology — with **Python**.
 
 **You’ll learn to:** segment cells, measure them, and discover patterns (from classical methods to U-Net).
