@@ -72,6 +72,7 @@ In this book the main focus is **Python**, because it's flexible, popular and in
 [![scikit-image](https://img.shields.io/badge/scikit-image%20processing-informational)](https://scikit-image.org/)
 [![opencv](https://img.shields.io/badge/OpenCV-image%20processing-informational?logo=opencv)](https://scikit-image.org/)
 
+
 ## Set up Python environment
 
 Before we touch pixels, let’s make sure your tools are in place. Bioimage analysis tends to mix “scientific Python” (arrays, plots) with “image Python” (TIFF stacks, filters, segmentation). A clean environment keeps that mix from turning into dependency chaos.
@@ -142,6 +143,17 @@ Semantic segmentation
 Instance segmentation
 : Instance segmentation extends semantic segmentation by not only classifying each pixel but also distinguishing between different instances of the same class. For example, instead of labeling all cells as one group, it identifies and separates each individual cell as a distinct object. This provides both pixel-level precision and object-level separation.
 
+## Image basics
+
+### Image intensity
+
+Image intensity is the brightness value of a pixel in a digital image, representing the amount of light captured at a specific point. In grayscale images, it usually ranges from 0 (black) to 255 (white), while in color iamges it is defined by the intensity values of color channels such as red, green, and blue. Intensity variations help identify features and details in image processing.
+
+In case of microscopy images the intensity depends on staining, exposure, gain, optics and biology. When you compare intensities across images, you're often comparing both biology and acquisition settings, so later we will talk about normalization and controls.
+
+### Noise
+
+In biomedical images, imagew noise appears as unwanted grainy or speckled patterns that can make cells, tissues, or other biological structures harder to see clearly. It often occurs during image capture due to low light levels, limitations of imaging equipment, or electronic interference. This noise can blur fine details and reduce the accuracy of observations or measurements. Therefore, reducing noise is important in biomedical imaging to ensure that important biological features are clearly visible and properly analyzed.
 
 
 <!-- #endregion -->
