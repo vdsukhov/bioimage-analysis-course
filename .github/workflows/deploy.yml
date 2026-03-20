@@ -1,42 +1,56 @@
-- uses: actions/checkout@v4
+# .github/workflows/deploy.yml
+name: Jupyter Book (via myst) GitHub Pages Deploy
 
-- name: Setup Pages
-  uses: actions/configure-pages@v3
+on:
+  push:
+    branches: [main]
 
-# 1) Python is required for notebook execution
-- name: Set up Python
-  uses: actions/setup-python@v5
-  with:
-    python-version: "3.11"
-    cache: "pip"
+env:
+  BASE_URL: /${{ github.event.repository.name }}
 
-# 2) Install your runtime deps (kernel, libraries used in notebooks)
-- name: Install Python dependencies
-  run: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
-# 3) Install Jupyter Book (choose ONE method below)
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
-# Option A: Install via pip (simple, consistent with Python execution)
-- name: Install Jupyter Book
-  run: pip install "jupyter-book>=2"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
-# Option B: If you want to keep npm install -g jupyter-book, you still need Python deps above.
-# - name: Install Jupyter Book (via myst)
-#   run: npm install -g jupyter-book
+    steps:
+      - uses: actions/checkout@v4
 
-# 4) Execute + build HTML
-- name: Build HTML (execute notebooks)
-  run: jupyter book build --execute --html
-  # Optional safety if your notebooks are heavy / conflict in parallel:
-  # run: jupyter book build --execute --execute-parallel 1 --html
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
 
-- name: Upload artifact
-  uses: actions/upload-pages-artifact@v3
-  with:
-    path: "./_build/html"
+      # Python is required for notebook execution
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
 
-- name: Deploy to GitHub Pages
-  id: deployment
-  uses: actions/deploy-pages@v4
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install "jupyter-book>=2"
+
+      - name: Build HTML (execute notebooks)
+        run: jupyter book build --execute --html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./_build/html"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
