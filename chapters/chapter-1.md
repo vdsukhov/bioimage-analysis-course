@@ -9,7 +9,7 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.19.1
   kernelspec:
-    display_name: Python 3 (ipykernel)
+    display_name: jb
     language: python
     name: python3
 ---
@@ -154,6 +154,10 @@ In case of microscopy images the intensity depends on staining, exposure, gain, 
 ### Noise
 
 In biomedical images, imagew noise appears as unwanted grainy or speckled patterns that can make cells, tissues, or other biological structures harder to see clearly. It often occurs during image capture due to low light levels, limitations of imaging equipment, or electronic interference. This noise can blur fine details and reduce the accuracy of observations or measurements. Therefore, reducing noise is important in biomedical imaging to ensure that important biological features are clearly visible and properly analyzed.
+
+```{code-cell}
+print(5 + 5)
+```
 
 
 <!-- #endregion -->
