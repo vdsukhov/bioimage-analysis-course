@@ -1,0 +1,42 @@
+/* User Provided Stylesheet */
+
+/* Dark mode override (Tailwind-style dark class on a parent) */
+.dark .footer {
+  background: rgba(20, 20, 20, 0.4);
+  /* tweak to match your sidebar/background */
+}
+
+
+/* Hide the external-link icon if it’s rendered as an SVG icon */
+.footer .icon-link-external,
+.footer svg.icon-link-external,
+.footer svg[data-icon="external-link"],
+.footer a svg {
+  display: none !important;
+}
+
+/* 1) If the theme renders an explicit icon element inside links */
+main a .link-icon,
+main a .icon-link-external,
+main svg.icon-link-external {
+  display: none !important;
+}
+
+
+/* Keep the icon row on one line */
+.footer .footer-icons{
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.footer .footer-icon{
+  display: inline-flex; /* prevents theme from making links block */
+  line-height: 0;
+}
+
+.footer .footer-icon img{
+  display: inline-block; /* prevents images from becoming block */
+  vertical-align: middle;
+}
