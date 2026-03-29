@@ -145,6 +145,110 @@ Instance segmentation
 
 ## Image basics
 
+Before we analyze images, we need to load them correctly. In bioimage analysis, this step is often more complicated than expected because biological images come in many formats--some simple, some highly specialized.
+
+### Image file formats
+
+Not all image files are created equal. The format determines:
+- how pixel data is stored
+- whether metadata is preserved (e.g., pixel size, channels, timepoints)
+- how easy it is to load the image in Python
+
+**Common formats you'll encounter:**
+| Format                                       | Description                               | Typical use                  |
+| -------------------------------------------- | ----------------------------------------- | ---------------------------- |
+| `.png`, `.jpg`                               | Standard image formats                    | Figures, quick visualization |
+| `.tif` / `.tiff`                             | Flexible, supports multi-dimensional data | Microscopy (very common)     |
+| `.ome.tif`                                   | TIFF + standardized metadata              | Bioimaging workflows         |
+| `.czi`, `.lif`, `.nd2`, ...                  | Proprietary formats. Microscope-specific  | Raw acquisition data         |
+
+### Loading standard images `png`, `jpg`
+
+In Python, there are many different libraries for working with images. This is both powerful and confusing:
+- Different packages often provide similar functionality
+- The same task (like loading image) can be done in multiple ways
+- Each library has its own conventions (data types, color order, etc.)
+
+```{note}
+An important skill is not just knokwing one tool, but understanding how to navigate between them.
+```
+
+Let's look at two widely used libraries:
+- `scikit-image` &rarr; common in scientific computing
+- `open-cv` &rarr; common in computer vision and industry
+
+**Read image using `scikit-image`**
+
+```python
+from skimage import io
+import matplotlib.pyplot as plt
+
+img = io.imread("example.png")
+
+plt.imshow(img)
+plt.title("scikit-image")
+plt.axis("off")
+
+print("Shape:", img.shape)
+print("Type of the object:", type(img))
+print("Dtype:", img.dtype)
+print("Min/Max": img.min(), img.max())
+```
+
+This code reads the image into NumPy array. Uses RGB color order (what matplotlib expects).
+
+**Read image using `open-cv`**
+
+```python
+import cv2
+import matplotlib.pyplot as plt
+
+img = cv2.imread("example.png")
+
+plt.imshow(img)
+plt.title("OpenCV (raw)")
+plt.axis("off")
+
+print("Shape":, img.shape)
+print("Type of the object":, type(img))
+print("Dtype:", img.dtype)
+print("Min/Max:", img.min(), img.max())
+```
+
+At first glance, this looks the same--but the displayed image may have incorrect colors. This happens because there is a key difference between these two libraries in the way how the color channels are ordered.
+- `scikit-image` &rarr; RGB
+- `OpenCV` &rarr; BGR
+
+To "fix" the `open-cv` image:
+```python
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+plt.imshow(img_rgb)
+plt.title("OpenCV (converted to RGB")
+plt.axis("off")
+```
+
+````{admonition} Exercise: Reorder color channels
+:class: tip
+
+::::{tab-set}
+
+:::{tab-item} Try it
+Write a code that takes an BGR image and converts is to RGB image. In this task don't use the `cv2.cvtColor` function and manually adjust the order of color channels.
+:::
+
+:::{tab-item} Solution
+```python
+img_rgb = img[:, :, ::-1]
+```
+:::
+
+::::
+
+````
+
+
+
 ### Image intensity
 
 Image intensity is the brightness value of a pixel in a digital image, representing the amount of light captured at a specific point. In grayscale images, it usually ranges from 0 (black) to 255 (white), while in color iamges it is defined by the intensity values of color channels such as red, green, and blue. Intensity variations help identify features and details in image processing.
