@@ -112,22 +112,6 @@ pip install -U pip
 pip install numpy scipy pandas matplotlib scikit-image tifffile
 ```
 
-## Images are arrays
-
-In Python, an image is usually a NumPy array. That means every pixel is just a number, and the whole image is a grid of numbers.
-
-A few common image "shapes" you may encounter:
-- A 2D grayscale image often looks like `(H, W)`.
-- A color image often looks like `(H, W, 3)`.
-- A z-stack (3D volume) often looks like `(Z, H, W)`.
-- A time series often looks like `(T, H, W)` or `(T, Z, H, W)`.
-
-```{note}
-Different tools store axes in different orders, so the first thing you’ll always check is: shape, dtype, min/max.
-```
-
-**Intensity and bit-depth**: Pixel values represent intensity (brightness). In microscopy, many images are 16-bit, which means values can go up to 65535. That’s one reason images can look “dark” by default: your display might be showing only a small slice of the available range.
-
 ## Image segmentation
 
 Image segmentation is a fundamental task in computer vision that involves partitioning an image into meaningful regions or segments. The goal is to simplify and organize visual information by grouping pixels with similar characteristics—such as color, intensity, or texture—into coherent structures that correspond to objects or areas of interest. By transforming raw pixel data into structured representations, image segmentation enables higher-level analysis and interpretation, serving as a critical step in applications such as medical imaging, autonomous driving, object recognition, and scene understanding.
@@ -162,6 +146,8 @@ Not all image files are created equal. The format determines:
 | `.ome.tif`                                   | TIFF + standardized metadata              | Bioimaging workflows         |
 | `.czi`, `.lif`, `.nd2`, ...                  | Proprietary formats. Microscope-specific  | Raw acquisition data         |
 
+There are even more of different file formats for storing images. But don't panic, usually there is already a python package that can help you to work with your data.
+
 ### Loading standard images `png`, `jpg`
 
 In Python, there are many different libraries for working with images. This is both powerful and confusing:
@@ -170,14 +156,14 @@ In Python, there are many different libraries for working with images. This is b
 - Each library has its own conventions (data types, color order, etc.)
 
 ```{note}
-An important skill is not just knokwing one tool, but understanding how to navigate between them.
+An important skill is not just knowing one tool, but understanding how to navigate between them.
 ```
 
 Let's look at two widely used libraries:
 - `scikit-image` &rarr; common in scientific computing
 - `open-cv` &rarr; common in computer vision and industry
 
-**Read image using `scikit-image`**
+#### Read image using `scikit-image`
 
 ```python
 from skimage import io
@@ -197,7 +183,51 @@ print("Min/Max": img.min(), img.max())
 
 This code reads the image into NumPy array. Uses RGB color order (what matplotlib expects).
 
-**Read image using `open-cv`**
+#### Images are arrays
+
+In bioimage analysis, an image is not a simple "image" for us, but a multidimensional numerical array (matrix). While from naive point of view pixels correspond to colors, in data analysis we will consider them as a grid of numerical values. This distinction is the foundation of bioimage data analysis.
+
+By treating images as raw arrays, we can immediately apply statistical operations, filter specific channels for analysis, and prepare data for machine learning models without altering the underlying data structure.
+
+```python
+from skimage import io
+import numpy as np
+import matplotlib.pyplot as plt
+
+img = io.imread("example.png") 
+
+print(f"Data type: {img.dtype}")
+print(f"Shape: {img.shape}")
+
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 3, 1)
+plt.imshow(img[:, :, 0], cmap='Reds')
+plt.title("Channel 0 (Red)\nData Shape: (H, W)")
+plt.axis('off')
+
+plt.subplot(1, 3, 2)
+plt.imshow(img[:, :, 1], cmap='Greens')
+plt.title("Channel 1 (Green)\nData Shape: (H, W)")
+plt.axis('off')
+
+plt.subplot(1, 3, 3)
+plt.imshow(img[:, :, 2], cmap='Blues')
+plt.title("Channel 2 (Blue)\nData Shape: (H, W)")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+```
+
+Key takeways:
+- Notice that while the original shape of the image is `(H, W, 3)`, each slice (e.g., `img[:, :, 0]`) is a standard 2D matrix with shape `(H, W)`. To `numpy`, there is no difference between the Red and Blue channels in terms of structure; they are just different sets of numbers at different indices.
+
+
+
+
+
+#### Read image using `open-cv`
 
 ```python
 import cv2
