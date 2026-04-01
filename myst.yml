@@ -15,7 +15,7 @@ project:
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
   toc:
     - file: index.md
-    - file: chapters/chapter-1.ipynb
+    - file: chapters/chapter-1.md
     - file: chapters/chapter-2.md
     - file: chapters/chapter-3.md
     - file: chapters/chapter-4.md
@@ -31,6 +31,7 @@ site:
     primary_sidebar_footer: |
   options:
     style: custom.css
+    outline_maxdepth: 3
     # logo_text: "Made by Vladimir Sukhov"
     favicon: favicon-bio-image.ico
     logo: bio-img.png
