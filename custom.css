@@ -38,3 +38,35 @@ main svg.icon-link-external {
   display: inline-block; /* prevents images from becoming block */
   vertical-align: middle;
 }
+
+
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&display=swap");
+
+
+p,
+li,
+blockquote,
+td,
+th {
+  font-family: "Literata", "Lora", serif;
+  font-size: 1.05em;
+}
+
+/* fenced code blocks and code cells */
+pre,
+pre code,
+div.highlight pre {
+  font-size: 1.05em;
+}
+
+
+
+.myst-admonition-body,
+.myst-admonition-body p,
+.myst-admonition-body li,
+.myst-admonition-body blockquote,
+.myst-admonition-body td,
+.myst-admonition-body th {
+  font-size: 1.0em;
+}
