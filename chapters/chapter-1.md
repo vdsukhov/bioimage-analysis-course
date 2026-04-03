@@ -14,7 +14,6 @@ jupyter:
     name: python3
 ---
 
-<!-- #region -->
 # Introduction to bioimage analysis
 
 ```{note} Plan
@@ -322,5 +321,3 @@ In this lesson, we introduced the basic mindset for working with images in Pytho
 - noise is part of real imaging data and affects later analysis
 
 In the next lessons, we will build on these basics and look at tools for inspecting image values more carefully, such as contrast, histograms, and simple preprocessing.
-
-<!-- #endregion -->
