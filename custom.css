@@ -70,3 +70,7 @@ div.highlight pre {
 .myst-admonition-body th {
   font-size: 1.0em;
 }
+
+img {
+  border-radius: 5px;
+}
