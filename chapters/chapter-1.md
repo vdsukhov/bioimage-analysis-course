@@ -131,12 +131,10 @@ For this first lesson we will use simple image files such as `.png` so we can fo
 
 ### Images are arrays
 
-[![images-are-arrays](images/chapter-1/Slide1.JPG)](images/chapter-1/Slide1.JPG)
+[![pixel-values](images/chapter-1/Slide2.JPG)](images/chapter-1/Slide2.JPG)
 
 Once an image is loaded into Python, it is usually represented as a **NumPy array**. That means an image is not a special magical object. It is numerical data arranged on a grid. For a grayscale image, the shape is often:
 - `(H, W)`
-
-[![pixel-values](images/chapter-1/Slide2.JPG)](images/chapter-1/Slide2.JPG)
 
 For a color image, the shape is often:
 - `(H, W, 3)` where: `H` = height, `W` = width, `3` = three color channels
@@ -148,6 +146,9 @@ So when you inspect an image in Python, one of the first things to check is:
 - its value range
 
 Those three properties already tell you a lot about what kind of image you have.
+
+[![images-are-arrays](images/chapter-1/Slide1.JPG)](images/chapter-1/Slide1.JPG)
+
 
 ### Loading standard images with `scikit-image`
 
