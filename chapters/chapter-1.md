@@ -1,20 +1,12 @@
 ---
-jupyter:
-  jupytext:
-    default_lexer: ipython3
-    formats: ipynb,md
-    text_representation:
-      extension: .md
-      format_name: markdown
-      format_version: '1.3'
-      jupytext_version: 1.19.1
-  kernelspec:
-    display_name: jb
-    language: python
-    name: python3
+kernelspec:
+  display_name: jb
+  language: python
+  name: python3
 ---
 
 # Introduction to bioimage analysis
+
 
 ```{note} Plan
 - Why images matter in modern biology
@@ -131,7 +123,16 @@ For this first lesson we will use simple image files such as `.png` so we can fo
 
 ### Images are arrays
 
-[![pixel-values](images/chapter-1/Slide2.JPG)](images/chapter-1/Slide2.JPG)
+:::{figure}
+:label: fig-pixel-values
+:align: center
+
+<a href="images/chapter-1/Slide2.JPG" target="_blank" rel="noopener noreferrer">
+  <img src="images/chapter-1/Slide2.JPG" alt="pixel-values">
+</a>
+
+Pixel values of enlarged view.
+:::
 
 Once an image is loaded into Python, it is usually represented as a **NumPy array**. That means an image is not a special magical object. It is numerical data arranged on a grid. For a grayscale image, the shape is often:
 - `(H, W)`
@@ -257,63 +258,76 @@ plt.title("OpenCV (converted to RGB)")
 plt.axis("off")
 ```
 
-```{admonition} Small but useful habit
-:class: tip
-
-When you load an image, get into the habit of checking:
-
+**Small but useful habit**: when you load an image, get into the habit of chekcing:
 - `img.shape`
 - `img.dtype`
-- `img.min(), img.max()`
-
+- `img.min()`, `img.max()`
 These quick checks often catch mistakes early.
-```
 
-### Manual channel reordering
+````{admonition} Exercise: Reorder color channels
+:class: tip
 
-It is also useful to know that channel order can be changed by array slicing.
+::::{tab-set}
 
+:::{tab-item} Try it
+Write a code that takes an BGR image and converts is to RGB image. In this task don't use the `cv2.cvtColor` function and manually adjust the order of color channels.
+:::
+
+:::{tab-item} Solution
 ```python
 img_rgb = img[:, :, ::-1]
 ```
+:::
 
-This reverses the last axis, turning BGR into RGB.
+::::
+````
 
-### Image intensity
 
-Image intensity is the numerical value stored at each pixel. In a grayscale image, that value directly represents brightness. In a color image, each channel has its own intensity values.
+### Image intensity and bit depth
 
-For simple 8-bit images, values often range from:
+Image intensity is the numerical value stored at each pixel. We saw an example earlier in [this figure](#fig-pixel-values). In bioimage analysis, these values are not just "brightness"—they are a proxy for biological signal. The range of possible values is defined by the **bit depth** (data type).
 
-- `0` = black
-- `255` = bright
+The most common formats you will encounter are:
 
-But not all images follow this range. Many microscopy images use 16-bit values, and the meaning of the intensity depends on how the image was acquired and stored.
+- **8-bit (`uint8`)**: Values from `0` to `255`. Common for standard photographs, but often too "coarse" for high-precision quantification and easy to **saturate** (clip) if the signal is bright.
+- **16-bit (`uint16`)**: Values from `0` to `65,535`. The standard for raw microscopy data. It provides a high dynamic range, allowing you to distinguish subtle differences in dim and bright structures.
+- **Float (`float32`)**: Values typically normalized between `0.0` and `1.0` (though they can be larger). Essential for mathematical operations—like filtering or deconvolution—to avoid rounding errors that occur with integers.
 
-In microscopy, intensity is influenced by many factors, including:
+| Bit Depth | Range | Why it matters |
+| :--- | :--- | :--- |
+| **8-bit** | 0 – 255 | Low storage; standard for web/display; prone to clipping. |
+| **16-bit** | 0 – 65,535 | High precision; standard for raw scientific acquisition. |
+| **Float** | 0.0 – 1.0 | High precision; avoids rounding errors during processing. |
 
-- staining
-- exposure time
-- detector gain
-- optics
-- the underlying biology
+In microscopy, intensity is influenced by staining, exposure time, and detector gain. When comparing intensities across images, always ensure they were collected under identical conditions and that no pixels have reached the maximum possible value ("clipping"), as this loses biological information.
 
-That means intensity is not “just brightness”. It is often part biological signal and part acquisition setup. When you compare intensities across images, you should always think about whether the images were collected under comparable conditions.
+### Noise and Signal-to-Noise Ratio (SNR)
 
-### Noise
+Real biological images are never perfect. They always contain **noise**—unwanted variation in pixel values that does not come from the biology itself.
 
-Real images are never perfect. Most images contain some amount of **noise**, meaning unwanted variation in pixel values.
+In microscopy, noise usually comes from two main sources:
+- **Shot noise (Poisson noise)**: Caused by the random nature of photon arrival. Since photons arrive at the detector at random intervals, the signal "flickers" slightly. This is fundamental physics and is most noticeable in dim images.
+- **Readout noise (Gaussian noise)**: Caused by the camera electronics during the process of converting light into a digital signal.
 
-In biological imaging, noise can come from:
+A critical concept is the **Signal-to-Noise Ratio (SNR)**. In bioimage analysis, we rarely care about the absolute amount of noise; we care about how strong our biological signal is compared to that noise.
 
-- low light levels
-- the detector or camera electronics
-- short exposure times
-- the stochastic nature of photon detection
+| Property | Description |
+| :--- | :--- |
+| **High SNR** | The signal (e.g., a fluorescent cell) is much brighter than the noise. Easy to segment and measure accurately. |
+| **Low SNR** | The signal is buried in noise. It becomes difficult to distinguish real biological structures from background "snow." |
 
-Noise matters because it can make structures harder to see and measurements less stable. For example, if you want to measure the brightness of a dim cell, noise can make that value less reliable.
+:::{figure}
+:label: fig-signal-strength
+:align: center
 
-At this stage, the main idea is simple: not every bright or dark pixel reflects biology. Some of the variation comes from the imaging process itself.
+<a href="images/chapter-1/Slide3.JPG" target="_blank" rel="noopener noreferrer">
+  <img src="images/chapter-1/Slide3.JPG" alt="pixel-values">
+</a>
+
+Illustrative examples of different signal intensities in the same region of interest
+:::
+
+Noise matters because it affects every step of the pipeline: it can lead to false detections during segmentation and add significant uncertainty to intensity measurements. While we can use digital filters to reduce noise later, the best approach is always to optimize acquisition at the microscope to maximize SNR.
 
 ## Recap
 
