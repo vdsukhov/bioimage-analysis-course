@@ -1,3 +1,11 @@
+---
+kernelspec:
+  display_name: jb
+  language: python
+  name: python3
+---
+
+
 # Bioimage analysis
 
 ![codex](./chapters/images/akoya_codex.webp)
@@ -20,13 +28,16 @@ Turn messy microscopy images into clean, measurable biology — with **Python**.
 
 ## Tiny taste of the book
 
-```python
+```{code-cell}
 from skimage import io
 import matplotlib.pyplot as plt
 
-img = io.imread("cells.tif")
+url = 'https://github.com/vdsukhov/bioimage-analysis-course/blob/main/data/images/dapi.png?raw=true'
+
+img = io.imread(url)
 plt.imshow(img, cmap="gray")
 plt.axis("off")
+plt.gcf().set_facecolor('black')
 plt.show()
 ```
 
