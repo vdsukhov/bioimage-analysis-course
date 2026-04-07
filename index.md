@@ -10,9 +10,9 @@ Turn messy microscopy images into clean, measurable biology — with **Python**.
 
 ## What’s inside
 
-- **Segmentation that actually works**: semantic vs instance  
-- **Image essentials**: intensity, noise, contrast, histograms  
+- **Image essentials**: intensity, noise, contrast, histograms
 - **Classic toolbox**: filtering, thresholding, morphology, labeling, watershed  
+- **Segmentation that actually works**: semantic vs instance  
 - **Deep learning jump**: U-Net + augmentation + training basics  
 - **From masks to insight**: features → PCA/UMAP → clustering
 
