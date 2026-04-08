@@ -155,21 +155,27 @@ Those three properties already tell you a lot about what kind of image you have.
 
 Let us start with `scikit-image`, a library that is widely used in scientific Python and bioimage analysis. It works naturally with NumPy arrays and plays nicely with `matplotlib`.
 
-```python
+
+```{code-cell}
 from skimage import io
 import matplotlib.pyplot as plt
 
-img = io.imread("example.png")
+url = 'https://github.com/vdsukhov/bioimage-analysis-course/blob/main/data/images/dapi.png?raw=true'
 
-plt.imshow(img)
-plt.title("scikit-image")
+img = io.imread(url)
+
+plt.imshow(img, cmap='gray')
 plt.axis("off")
+plt.gcf().set_facecolor('black')
+```
 
+```{code-cell}
 print("Shape:", img.shape)
 print("Type of the object:", type(img))
 print("Dtype:", img.dtype)
 print("Min/Max:", img.min(), img.max())
 ```
+
 
 This reads the image into a NumPy array. For a color image, `scikit-image` uses **RGB** channel order, which matches what `matplotlib` expects.
 
@@ -179,33 +185,41 @@ At this point, the most important observation is simple: even though we display 
 
 If `img.shape` is `(H, W, 3)`, then the last axis stores the color channels. We can inspect them one by one.
 
-```python
-from skimage import io
+```{code-cell}
+from skimage.data import colorwheel
 import matplotlib.pyplot as plt
 
-img = io.imread("example.png")
+img = colorwheel()
 
 print(f"Data type: {img.dtype}")
 print(f"Shape: {img.shape}")
 
+plt.imshow(img, cmap='gray')
+plt.axis("off")
+plt.gcf().set_facecolor('black')
+plt.show()
+```
+
+```{code-cell}
 plt.figure(figsize=(15, 5))
 
 plt.subplot(1, 3, 1)
 plt.imshow(img[:, :, 0], cmap="Reds")
-plt.title("Channel 0")
+plt.title("Channel 0", color='white', size=30)
 plt.axis("off")
 
 plt.subplot(1, 3, 2)
 plt.imshow(img[:, :, 1], cmap="Greens")
-plt.title("Channel 1")
+plt.title("Channel 1", color='white', size=30)
 plt.axis("off")
 
 plt.subplot(1, 3, 3)
 plt.imshow(img[:, :, 2], cmap="Blues")
-plt.title("Channel 2")
+plt.title("Channel 2", color='white', size=30)
 plt.axis("off")
 
 plt.tight_layout()
+plt.gcf().set_facecolor('black')
 plt.show()
 ```
 
