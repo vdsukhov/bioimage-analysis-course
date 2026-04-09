@@ -146,6 +146,32 @@ So when you inspect an image in Python, one of the first things to check is:
 - its data type (`dtype`)
 - its value range
 
+````{admonition} Exercise: Is this image grayscale or color?
+:class: tip
+
+::::{tab-set}
+
+:::{tab-item} Try it
+Write code that checks whether `img` is a grayscale image or a color image.
+
+- If the image has two dimensions, print `"grayscale"`.
+- If the image has three dimensions, print `"color"`.
+:::
+
+:::{tab-item} Solution
+```python
+if img.ndim == 2:
+    print("grayscale")
+elif img.ndim == 3:
+    print("color")
+else:
+    print("unknown image format")
+```
+:::
+
+::::
+````
+
 Those three properties already tell you a lot about what kind of image you have.
 
 [![images-are-arrays](images/chapter-1/Slide1.JPG)](images/chapter-1/Slide1.JPG)
@@ -176,6 +202,42 @@ print("Dtype:", img.dtype)
 print("Min/Max:", img.min(), img.max())
 ```
 
+````{admonition} Image inspection helper
+:class: tip
+
+::::{tab-set}
+
+:::{tab-item} Description
+When working with a newly loaded image, it is a good habit to inspect a few basic properties before doing anything else. Since we will repeat these checks many times throughout the course, it is helpful to wrap them into a small utility function.
+:::
+
+:::{tab-item} Implementation
+```{code-cell}
+import numpy as np
+
+def inspect_image(img, name="img"):
+    print(f"Name: {name}")
+    print(f"Type: {type(img)}")
+    print(f"Shape: {img.shape}")
+    print(f"Dtype: {img.dtype}")
+    print(f"Min: {img.min()}")
+    print(f"Max: {img.max()}")
+    print(f"Dimensions: {img.ndim}")
+
+    if img.ndim == 2:
+        print("Interpretation: grayscale image")
+    elif img.ndim == 3:
+        print(f"Interpretation: image with {img.shape[-1]} channels")
+    else:
+        print("Interpretation: higher-dimensional image")
+
+inspect_image(img)
+```
+:::
+
+::::
+````
+
 
 This reads the image into a NumPy array. For a color image, `scikit-image` uses **RGB** channel order, which matches what `matplotlib` expects.
 
@@ -188,6 +250,7 @@ If `img.shape` is `(H, W, 3)`, then the last axis stores the color channels. We 
 ```{code-cell}
 from skimage.data import colorwheel
 import matplotlib.pyplot as plt
+plt.style.use('dark_background')
 
 img = colorwheel()
 
@@ -196,7 +259,6 @@ print(f"Shape: {img.shape}")
 
 plt.imshow(img, cmap='gray')
 plt.axis("off")
-plt.gcf().set_facecolor('black')
 plt.show()
 ```
 
@@ -219,7 +281,6 @@ plt.title("Channel 2", color='white', size=30)
 plt.axis("off")
 
 plt.tight_layout()
-plt.gcf().set_facecolor('black')
 plt.show()
 ```
 
@@ -230,6 +291,32 @@ For learners already comfortable with arrays, this is the main connection to mak
 ```{note}
 This example assumes a 3-channel color image. A grayscale image usually has shape `(H, W)`, so indexing it as `img[:, :, 0]` would fail.
 ```
+
+````{admonition} Exercise: Create a magenta-only view
+:class: tip
+
+::::{tab-set}
+
+:::{tab-item} Try it
+Create a copy of a color image where the **green channel is removed**, while the red and blue channels stay unchanged.
+
+Display the result with `matplotlib`.
+:::
+
+:::{tab-item} Solution
+```python
+img_magenta = img.copy()
+img_magenta[:, :, 1] = 0
+
+plt.imshow(img_magenta)
+plt.title("Red + Blue = Magenta")
+plt.axis("off")
+plt.show()
+```
+:::
+
+::::
+````
 
 ### Loading the same image with `OpenCV`
 
@@ -296,6 +383,35 @@ img_rgb = img[:, :, ::-1]
 ::::
 ````
 
+````{admonition} Exercise: Compare image loading libraries
+:class: tip
+
+::::{tab-set}
+
+:::{tab-item} Try it
+Load the same image using both `scikit-image` and `OpenCV`.
+
+Print the shape and dtype of each loaded image. Are they the same?
+:::
+
+:::{tab-item} Solution
+```python
+from skimage import io
+import cv2
+
+img_path = "" # specify path to an image
+
+img_sk = io.imread(img_path)
+img_cv = cv2.imread(img_path)
+
+print("scikit-image:", img_sk.shape, img_sk.dtype)
+print("OpenCV:", img_cv.shape, img_cv.dtype)
+```
+:::
+
+::::
+````
+
 
 ### Image intensity and bit depth
 
@@ -306,6 +422,17 @@ The most common formats you will encounter are:
 - **8-bit (`uint8`)**: Values from `0` to `255`. Common for standard photographs, but often too "coarse" for high-precision quantification and easy to **saturate** (clip) if the signal is bright.
 - **16-bit (`uint16`)**: Values from `0` to `65,535`. The standard for raw microscopy data. It provides a high dynamic range, allowing you to distinguish subtle differences in dim and bright structures.
 - **Float (`float32`)**: Values typically normalized between `0.0` and `1.0` (though they can be larger). Essential for mathematical operations—like filtering or deconvolution—to avoid rounding errors that occur with integers.
+
+Looking only at `min` and `max` values gives us a rough summary of the image, but it does not tell us how intensities are distributed. A histogram is one of the simplest ways to inspect this, and it is often the first step in understanding contrast and dynamic range.
+
+```{code-cell}
+plt.figure(figsize=(6, 4))
+plt.hist(img.ravel(), bins=32, edgecolor='white')
+plt.xlabel("Pixel intensity")
+plt.ylabel("Number of pixels")
+plt.title("Histogram of image intensities")
+plt.show()
+```
 
 | Bit Depth | Range | Why it matters |
 | :--- | :--- | :--- |
@@ -340,6 +467,95 @@ A critical concept is the **Signal-to-Noise Ratio (SNR)**. In bioimage analysis,
 
 Illustrative examples of different signal intensities in the same region of interest
 :::
+
+One simple way to understand signal-to-noise ratio is to compare two images that contain the same underlying object but different amounts of noise. In the next example, we create a synthetic bright object and then add weak or strong noise to it.
+
+```{code-cell}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Create a simple synthetic object
+img_clean = np.zeros((128, 128), dtype=np.float32)
+rr, cc = np.ogrid[:128, :128]
+mask = (rr - 64)**2 + (cc - 64)**2 < 20**2
+img_clean[mask] = 1.0
+
+# Add two different noise levels
+img_low_noise = img_clean + 0.10 * np.random.randn(128, 128)
+img_high_noise = img_clean + 0.35 * np.random.randn(128, 128)
+
+# Keep values in display range
+img_low_noise = np.clip(img_low_noise, 0, 1)
+img_high_noise = np.clip(img_high_noise, 0, 1)
+
+# Display results
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 3, 1)
+plt.imshow(img_clean, cmap="gray")
+plt.title("Clean signal")
+plt.axis("off")
+
+plt.subplot(1, 3, 2)
+plt.imshow(img_low_noise, cmap="gray")
+plt.title("Higher SNR")
+plt.axis("off")
+
+plt.subplot(1, 3, 3)
+plt.imshow(img_high_noise, cmap="gray")
+plt.title("Lower SNR")
+plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+```
+
+
+````{admonition} Exercise: Measure signal to noise ratio
+:class: tip
+
+::::{tab-set}
+
+:::{tab-item} Try it
+Your task is to measure the signal to noise ratio for the example above using the following expression:
+$$\text{SNR} = \frac{\text{mean signal} - \text{mean background}}{\text{std of background}}$$
+:::
+
+:::{tab-item} Solution
+```{code-cell}
+def compute_snr(img, mask):
+    signal_pixels = img[mask]
+    background_pixels = img[~mask]
+
+    signal_mean = signal_pixels.mean()
+    background_mean = background_pixels.mean()
+    background_std = background_pixels.std()
+
+    snr = (signal_mean - background_mean) / background_std
+
+    return signal_mean, background_mean, background_std, snr
+
+
+def print_snr_results(label, results):
+    signal_mean, background_mean, background_std, snr = results
+
+    print(f"{label}:")
+    print("  Signal mean:", signal_mean)
+    print("  Background mean:", background_mean)
+    print("  Background std:", background_std)
+    print("  Estimated SNR:", snr)
+    print()
+
+low_noise_results = compute_snr(img_low_noise, mask)
+high_noise_results = compute_snr(img_high_noise, mask)
+
+print_snr_results("Low noise image", low_noise_results)
+print_snr_results("High noise image", high_noise_results)
+```
+:::
+
+::::
+````
 
 Noise matters because it affects every step of the pipeline: it can lead to false detections during segmentation and add significant uncertainty to intensity measurements. While we can use digital filters to reduce noise later, the best approach is always to optimize acquisition at the microscope to maximize SNR.
 
