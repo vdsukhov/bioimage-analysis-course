@@ -74,17 +74,3 @@ div.highlight pre {
 img {
   border-radius: 5px;
 }
-
-
-@media (min-width: 1200px) {
-  main article {
-    max-width: 90rem;
-    width: 100%;
-  }
-}
-@media (max-width: 1199px) {
-  main article {
-    max-width: none;
-    width: auto;
-  }
-}
