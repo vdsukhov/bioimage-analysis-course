@@ -96,6 +96,17 @@ Smoothing is a **local** image transformation. That means the new value of a pix
 
 You do not need the full mathematical formalism right away. The intuition is enough: a smoothing filter looks at a local patch of the image and combines nearby values into something less noisy and more stable.
 
+:::{figure}
+:label: fig-smoothing
+:align: center
+
+<a href="images/chapter-2/Slide6.JPG" target="_blank" rel="noopener noreferrer">
+  <img src="images/chapter-2/Slide6.JPG" alt="pixel-values">
+</a>
+
+Smoothing effect on the image with varying strengths
+:::
+
 ### Common types of smoothing filters
 
 There are several classical ways to smooth an image, and they do not all behave in the same way.
@@ -117,6 +128,10 @@ A key parameter here is the **scale** of the filter, often described by `sigma`.
 #### Median filter
 
 A **median filter** replaces each pixel with the median value in its local neighborhood instead of the mean.
+
+:::{figure} ./images/chapter-2/median-filter.mp4
+Video illustration of the median filter
+:::
 
 This makes it especially useful for removing isolated bright or dark outliers, sometimes called “salt-and-pepper” noise. Compared with averaging filters, the median filter can preserve edges better in some cases, although it is not a universal replacement for Gaussian smoothing.
 
