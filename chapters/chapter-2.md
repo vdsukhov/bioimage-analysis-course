@@ -183,6 +183,11 @@ A **mean filter** replaces each pixel with the average of its neighbors. This is
 
 It is easy to understand, but it also tends to blur edges quite strongly. Because of that, it is useful mainly as a first conceptual example rather than the best default choice for microscopy.
 
+:::{figure} ./images/chapter-2/mean-filter.mp4
+Video illustration of the mean filter
+:::
+
+
 ::::{tab-set}
 
 :::{tab-item} Abstract example
@@ -225,6 +230,11 @@ plt.show()
 :::
 
 ::::
+
+
+```{note}
+A mean filter is not suitable for salt-and-pepper noise because averaging allows extreme pixel values to distort the result, causing blurring and spreading of noise. This type of noise contains sharp outliers that are better handled by a median filter, which preserves edges while removing them. However, a mean filter performs well for reducing Gaussian noise or other smoothly varying noise, where pixel values fluctuate gradually. In such cases, averaging helps smooth the image without being heavily affected by extreme values.
+```
 
 
 #### Gaussian filter
