@@ -9,6 +9,18 @@ Biological images are rarely ready for analysis straight out of the microscope. 
 
 That is where classical image processing comes in. It gives us a set of simple, interpretable tools for adjusting intensity, reducing noise, enhancing structure, and separating foreground from background. These methods are still widely used because they are fast, transperent, and often work surprisingly well. In this chapter, we will start to build a practical toolkit for preparing images for segmentation and measurement.
 
+:::{note} Generic imports for our python code
+:class: dropdown
+
+```{code-cell}
+from skimage import io, filters, util
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.style.use('dark_background')
+```
+:::
+
 ## Adjusting intensity and contrast
 
 Biological images often contain useful structure that is hard to see at first glance. A signal may be present, but if the intensity range is narrow, the image can look dim, flat, or low-contrast. In practice, we often “improve” such images — but that phrase can mean two very different things, and the difference matters.
@@ -111,20 +123,6 @@ Smoothing effect on the image with varying strengths
 
 There are several classical ways to smooth an image, and they do not all behave in the same way.
 
-#### Mean filter
-
-A **mean filter** replaces each pixel with the average of its neighbors. This is one of the simplest possible smoothing operations.
-
-It is easy to understand, but it also tends to blur edges quite strongly. Because of that, it is useful mainly as a first conceptual example rather than the best default choice for microscopy.
-
-#### Gaussian filter
-
-A **Gaussian filter** is one of the most common smoothing methods in image processing. Like the mean filter, it averages nearby values, but it gives more weight to pixels near the center and less weight to pixels farther away.
-
-This usually produces a smoother and more natural-looking result than a simple mean filter. In bioimage analysis, Gaussian smoothing is often a reasonable default when you want to reduce moderate noise before further processing.
-
-A key parameter here is the **scale** of the filter, often described by `sigma`. A small `sigma` produces mild smoothing, while a larger `sigma` produces stronger smoothing. As `sigma` increases, noise is reduced more aggressively, but fine detail is also more likely to disappear.
-
 #### Median filter
 
 A **median filter** replaces each pixel with the median value in its local neighborhood instead of the mean.
@@ -134,6 +132,109 @@ Video illustration of the median filter
 :::
 
 This makes it especially useful for removing isolated bright or dark outliers, sometimes called “salt-and-pepper” noise. Compared with averaging filters, the median filter can preserve edges better in some cases, although it is not a universal replacement for Gaussian smoothing.
+
+::::{tab-set}
+
+:::{tab-item} Abstract example
+```{code-cell}
+A = np.array(
+    [
+        [27, 40, 35, 51],
+        [41, 38, 255, 46],
+        [48, 57, 59, 71],
+        [0, 80, 85, 99]
+    ]
+)
+
+kernel = np.ones((3, 3))
+result = filters.median(A, kernel)
+print(result)
+```
+
+:::
+
+:::{tab-item} Median filter applied to an image
+```{code-cell}
+url = "https://github.com/vdsukhov/bioimage-analysis-course/blob/main/data/images/snp-high.jpg?raw=true"
+
+img = io.imread(url)
+
+kernel = np.ones((3, 3))
+res = filters.median(img, kernel)
+
+fig, axs = plt.subplots(1, 2, figsize = (8, 5))
+axs[0].imshow(img, cmap ='gray')
+axs[0].set_title('Before')
+axs[0].axis('off')
+
+axs[1].imshow(res, cmap='gray')
+axs[1].set_title('After')
+axs[1].axis('off')
+
+plt.show()
+```
+:::
+
+::::
+
+#### Mean filter
+
+A **mean filter** replaces each pixel with the average of its neighbors. This is one of the simplest possible smoothing operations.
+
+It is easy to understand, but it also tends to blur edges quite strongly. Because of that, it is useful mainly as a first conceptual example rather than the best default choice for microscopy.
+
+::::{tab-set}
+
+:::{tab-item} Abstract example
+```{code-cell}
+A = np.array(
+    [
+        [0, 0, 0],
+        [0, 255, 0],
+        [0, 0, 0]
+    ],
+    dtype = np.uint8
+)
+
+kernel = np.ones((3, 3))
+result = filters.rank.mean(A, kernel)
+print(result)
+```
+
+:::
+
+:::{tab-item} Mean filter applied to an image
+```{code-cell}
+url = "https://github.com/vdsukhov/bioimage-analysis-course/blob/main/data/images/snp-high.jpg?raw=true"
+img = io.imread(url)
+
+kernel = np.ones((3, 3))
+res = filters.rank.mean(img, kernel)
+
+fig, axs = plt.subplots(1, 2, figsize = (8, 5))
+axs[0].imshow(img, cmap ='gray')
+axs[0].set_title('Before')
+axs[0].axis('off')
+
+axs[1].imshow(res, cmap='gray')
+axs[1].set_title('After')
+axs[1].axis('off')
+
+plt.show()
+```
+:::
+
+::::
+
+
+#### Gaussian filter
+
+A **Gaussian filter** is one of the most common smoothing methods in image processing. Like the mean filter, it averages nearby values, but it gives more weight to pixels near the center and less weight to pixels farther away.
+
+This usually produces a smoother and more natural-looking result than a simple mean filter. In bioimage analysis, Gaussian smoothing is often a reasonable default when you want to reduce moderate noise before further processing.
+
+A key parameter here is the **scale** of the filter, often described by `sigma`. A small `sigma` produces mild smoothing, while a larger `sigma` produces stronger smoothing. As `sigma` increases, noise is reduced more aggressively, but fine detail is also more likely to disappear.
+
 
 ### Smoothing is task-dependent
 
