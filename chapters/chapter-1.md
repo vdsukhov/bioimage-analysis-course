@@ -213,6 +213,7 @@ When working with a newly loaded image, it is a good habit to inspect a few basi
 
 :::{tab-item} Implementation
 ```{code-cell}
+:label: inspect-image-code
 import numpy as np
 
 def inspect_image(img, name="img"):
@@ -230,7 +231,10 @@ def inspect_image(img, name="img"):
         print(f"Interpretation: image with {img.shape[-1]} channels")
     else:
         print("Interpretation: higher-dimensional image")
+```
 
+Now we can use this function with the provided image:
+```{code-cell}
 inspect_image(img)
 ```
 :::

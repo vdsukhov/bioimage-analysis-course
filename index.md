@@ -8,7 +8,7 @@ kernelspec:
 
 # Bioimage analysis
 
-![codex](./chapters/images/akoya_codex.webp)
+![codex](./chapters/images/intro.JPG)
 
 Turn messy microscopy images into clean, measurable biology — with **Python**.
 

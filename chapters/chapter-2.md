@@ -18,8 +18,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 plt.style.use('dark_background')
+
 ```
 :::
+
+
+```{code-cell}
+:tags: [remove-cell]
+def inspect_image(img, name="img"):
+    print(f"Name: {name}")
+    print(f"Type: {type(img)}")
+    print(f"Shape: {img.shape}")
+    print(f"Dtype: {img.dtype}")
+    print(f"Min: {img.min()}")
+    print(f"Max: {img.max()}")
+    print(f"Dimensions: {img.ndim}")
+
+    if img.ndim == 2:
+        print("Interpretation: grayscale image")
+    elif img.ndim == 3:
+        print(f"Interpretation: image with {img.shape[-1]} channels")
+    else:
+        print("Interpretation: higher-dimensional image")
+```
 
 ## Adjusting intensity and contrast
 
@@ -48,6 +69,34 @@ The important point is that the image may look very different, while the data it
 
 This kind of adjustment is extremely useful for exploration. It helps us inspect dim structures, compare regions by eye, and get a better sense of what is present in the data. In microscopy, that is often the right first move: before modifying the image, first check whether you only need a better way to view it.
 
+In the following example, we will adjust the image rendering by using the `vmin` and `vmax` arguments of the `matplotlib.pyplot` function. First, we will load the image and [check some basic properties](inspect-image-code):
+```{code-cell}
+url = 'https://github.com/vdsukhov/bioimage-analysis-course/blob/main/data/images/dapi.png?raw=true'
+
+img = io.imread(url)
+inspect_image(img)
+```
+
+Now let's plot the original image alongside the image with adjusted `vmin` and `vmax` values:
+```{code-cell}
+fig, axs = plt.subplots(1, 2, figsize = (8, 5))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0].imshow(img, cmap='gray')
+axs[0].set_title('Original image')
+axs[0].axis('off')
+
+axs[1].imshow(img, cmap='gray', vmin = 32, vmax=168)
+axs[1].set_title('Custom vmin and vmax')
+axs[1].axis('off')
+```
+
+As you can see, the image on the right looks different from the one on the left. However, the original image remains untouched. Let's verify this by calling `inspect_image` once more:
+```{code-cell}
+inspect_image(img)
+```
+
+
 ### Pixel-value transformation: changing the data itself
 
 The second type of adjustment changes the **actual pixel intensities** in the image array.
@@ -63,6 +112,30 @@ Examples include:
 These operations can also improve contrast, but they do so by creating a transformed version of the image. After such a step, the pixel values are no longer the same as in the original data.
 
 That does not mean these methods are bad. On the contrary, they are often very useful in preprocessing pipelines. But once pixel values are changed, the transformation becomes part of the analysis workflow and should be treated seriously.
+
+Now, let's examine the case where we change the underlying image. We will calculate and display the log-scaled image.
+
+```{code-cell}
+logimg = img.copy()
+logimg = np.log2(logimg - logimg.min() + 1)
+
+fig, axs = plt.subplots(1, 2, figsize = (8, 5))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0].imshow(img, cmap='gray')
+axs[0].set_title('Original image')
+axs[0].axis('off')
+
+axs[1].imshow(logimg, cmap='gray')
+axs[1].set_title('Log image')
+axs[1].axis('off')
+```
+
+Now let's also inspect the `logimg`:
+```{code-cell}
+:tag: [hide-output]
+inspect_image(logimg)
+```
 
 ### Why the distinction matters
 
@@ -266,11 +339,187 @@ Smoothing can be very useful, but it is never free. A cleaner-looking image may 
 
 ## Detecting edges and structures
 
+So far, we’ve focused on adjusting images, but sometimes we want **boundaries** and **shapes** to stand out. This is where edge detection helps.
+An **edge** occurs where intensity changes sharply, often marking transitions between objects or regions, like a cell boundary.
+
+Instead of asking *“where is the image bright?”*, we ask *“where does it change?”* Smooth bright areas don’t form strong edges, while sharp intensity changes—even in dim regions—do.
+:::{figure}
+:label: image-gradient
+:align: center
+
+<a href="images/chapter-2/Slide7.JPG" target="_blank" rel="noopener noreferrer">
+  <img src="images/chapter-2/Slide7.JPG" alt="pixel-values">
+</a>
+
+Examples of image gradients
+:::
+
+
+This is captured by the **image gradient**:
+
+* **Small gradient** → little change
+* **Large gradient** → strong change, likely an edge
+
+
+Many classic edge-detection methods rely on this principle.
+
+### Common edge filters
+
+#### Sobel filter
+
+One of the most common classical edge detectors is the **Sobel filter**. The main idea is to measure how strongly the image intensity changes in different directions. Instead of looking only at pixel values themselves, the Sobel filter looks at how those values vary across a small local neighborhood.
+
+It does this using two small matrices, often called **kernels**. One kernel responds strongly to horizontal intensity changes, and the other responds strongly to vertical intensity changes:
+
+$$\label{sobel-kernels}
+G_x =
+\begin{bmatrix}
+-1 & 0 & 1 \\
+-2 & 0 & 2 \\
+-1 & 0 & 1
+\end{bmatrix}
+\qquad
+G_y =
+\begin{bmatrix}
+-1 & -2 & -1 \\
+0 & 0 & 0 \\
+1 & 2 & 1
+\end{bmatrix}
+$$
+
+You can think of these kernels as tiny detectors that slide across the image. At each position, they compare one side of the neighborhood to the other. If the intensity changes strongly from left to right, the response of $G_x$ will be large. If it changes strongly from top to bottom, the response of $G_y$ will be large.
+
+<!-- :::{figure}
+:label: image-sobel-kernels
+:align: center
+
+<a href="images/chapter-2/Slide8.JPG" target="_blank" rel="noopener noreferrer">
+  <img src="images/chapter-2/Slide8.JPG" alt="pixel-values">
+</a>
+
+Sobel kernels
+::: -->
+
+So the Sobel filter does not ask whether a region is bright or dark. It asks whether there is a **strong local change** in brightness. That is why it is useful for highlighting boundaries: edges often appear exactly where intensity changes quickly across space.
+
+In practice, we usually combine the horizontal and vertical responses into a single edge-strength image. Conceptually, this means:
+
+* $G_x$ tells us about changes in one direction
+* $G_y$ tells us about changes in the other direction
+* together they give an overall estimate of how strong the edge is at each pixel
+
+A common way to combine them is to treat $G_x$ and $G_y$ as two components of the local gradient and compute its magnitude:
+
+$$G = \sqrt{G_x^2 + G_y^2}$$
+
+This formula gives a single value that summarizes how strong the intensity change is, regardless of its direction. If either horizontal or vertical change is large, then $G$ will also be large. If both are small, then the pixel is likely part of a more uniform region.
+
+The result is an image where strong boundaries appear bright and more uniform regions appear dark. This makes outlines and transitions easier to see, even when the original image is not very visually clear.
+
+A nice feature of the Sobel kernels is that they do a little bit of smoothing and edge detection at the same time. That makes them more stable than a very naive pixel-difference calculation, although they can still respond strongly to noise. For that reason, Sobel filtering often works best when the image has already been denoised at least mildly.
+
+Now, let's see them in action. First, we will define the function `get_sobel`, which takes an image and applies Sobel kernels:
+::::{tab-set}
+
+:::{tab-item} Definition
+```{code-cell}
+from scipy.signal import convolve2d
+
+def get_sobel(img):
+  sobelx = np.array([
+      [-1, 0, 1],
+      [-2, 0, 2],
+      [-1, 0, 1]
+  ])
+
+  sobely = sobelx.T
+
+  imgx = convolve2d(img, sobelx, boundary='symm')
+  imgy = convolve2d(img, sobely, boundary='symm')
+  G = np.sqrt(imgx ** 2 + imgy ** 2)
+
+  G = np.abs((G - G.min()) / (G.max() - G.min()))
+  G = img_as_ubyte(G)
+
+  return G
+```
+
+:::
+
+:::{tab-item} Toy example
+```{code-cell}
+from skimage.util import img_as_ubyte
+
+H = 250
+R = np.round(H // 2 * 0.75).astype(int)
+canvas = np.zeros((H, H))
+y, x = np.ogrid[:H, :H]
+
+cy, cx = H // 2, H // 2
+mask = (x - cx) ** 2 + (y - cy) ** 2 <= R ** 2
+canvas[mask] = 1
+
+fig, axs = plt.subplots(1, 2, figsize=(8, 5))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0].imshow(canvas, cmap='gray')
+axs[0].axis('off')
+axs[0].set_title('Original image')
+
+axs[1].imshow(get_sobel(canvas), cmap='gray')
+axs[1].axis('off')
+axs[1].set_title('Sobel filter')
+```
+:::
+
+:::{tab-item} Microscopy image
+```{code-cell}
+fig, axs = plt.subplots(1, 2, figsize=(8, 5))
+fig.subplots_adjust(wspace=0.03)
+
+img_smooth = filters.gaussian(img, sigma=3)
+
+axs[0].imshow(img_smooth, cmap='gray')
+axs[0].axis('off')
+
+G = get_sobel(img_smooth)
+axs[1].imshow(G, cmap='gray')
+axs[1].axis('off')
+
+plt.imshow(G, cmap='gray')
+plt.gca().axis('off')
+```
+:::
+
+::::
+
+
+
+#### Laplacian-style filters
+
+Another family of methods looks at how intensity changes relative to the surrounding neighborhood in a slightly different way. These filters are often useful for emphasizing fine structure and transitions, but they can also be more sensitive to noise.
+
+That sensitivity matters because noise itself creates rapid local variation. For that reason, edge detection is often more stable when applied after at least mild smoothing.
+
+### Edges reveal structure, but they are not objects
+
+It is important to remember that an edge image is not the same thing as a segmentation. Edge detection highlights **transitions** and **boundaries**, but it does not automatically tell us which pixels belong to an object. A nucleus, for example, may appear as a bright ring-like boundary in an edge map, while its interior stays relatively dark.
+
+Even so, edge detection is very useful in bioimage analysis. Some biological structures are easier to identify by their outline than by their absolute brightness, and edge-based views can reveal organization that is harder to notice in the raw image alone. More broadly, they encourage a different way of reading an image: not just as a map of intensities, but as a map of spatial change.
+
+
+```{admonition} Warning
+:class: warning
+
+Edge filters respond to rapid intensity changes, but noise also creates rapid local variation. This means an edge image can highlight noise as well as real biological boundaries. A good habit is to compare the edge image with the original image and, if needed, apply mild smoothing first.
+```
+
+
 ## Correcting uneven background
 
 ## Thresholding images
 
-## Pitfalls, interpretation and recap
+## Recap
 
 
 

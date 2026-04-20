@@ -4,4 +4,4 @@ kernelspec:
     display_name: 'Python 3'
 ---
 
-# Watershed segmentation
+# Classical segmentations
