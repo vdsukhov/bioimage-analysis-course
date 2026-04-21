@@ -586,9 +586,87 @@ axs[2].axis('off')
 plt.show()
 ```
 
+
 ## Thresholding images
+
+Many image-processing steps still leave us with a grayscale image: each pixel has an intensity value, but we have not yet decided which pixels belong to an object and which belong to the background. **Thresholding** is one of the simplest ways to make that decision.
+
+The idea is straightforward: choose an intensity threshold, then classify pixels based on whether they are above or below it. This turns a grayscale image into a **binary image**, where pixels are usually labeled as either foreground or background.
+
+$$
+\text{binary}(x, y) =
+\begin{cases}
+1, & \text{if } I(x, y) > T \\
+0, & \text{otherwise}
+\end{cases}
+$$
+
+Here, $T$ is the threshold. Pixels brighter than $T$ are treated as foreground, and pixels below it are treated as background.
+
+### From grayscale image to binary mask
+
+Thresholding is an important conceptual step because it turns a grayscale image into a much simpler representation. Before thresholding, pixel values vary continuously across a range of intensities. After thresholding, each pixel is reduced to a yes-or-no decision: foreground or background, object or not object. That simplicity is exactly why thresholding is so useful. It often provides the first rough separation between structures of interest and their surroundings, and in many workflows it becomes the first step toward segmentation.
+
+Thresholding works best when foreground and background are reasonably well separated in intensity. For example, if bright nuclei appear on a dark background, then even a single threshold may produce a useful binary mask. In such cases, thresholding can be surprisingly effective: it is fast, intuitive, and often good enough as a first approximation.
+
+At the same time, real biological images are not always so cooperative. Objects may vary in brightness, the background may be uneven, and noise may create unwanted fluctuations. In those situations, thresholding becomes more sensitive to preprocessing and parameter choice. A threshold that is too low may include too much background, while a threshold that is too high may miss dim objects or keep only the brightest parts of each structure. So although thresholding is simple in principle, its success still depends strongly on image quality.
+
+
+
+#### Global thresholding
+
+The simplest approach is **global thresholding**, where one threshold value is used for the whole image.
+
+This works well when:
+
+* the background is fairly uniform,
+* the objects have similar brightness,
+* and the image has already been cleaned up enough that foreground and background are reasonably distinct.
+
+A global threshold is easy to apply and easy to interpret, which is why it is often the first method to try.
+
+#### Otsu thresholding
+
+A popular automatic choice is **Otsu’s method**. Instead of choosing the threshold by hand, Otsu’s method tries to find a value that best separates the image into two intensity groups.
+
+You can think of it as looking for a threshold that splits the histogram into background-like and foreground-like parts as cleanly as possible. When that assumption is roughly valid, Otsu’s method often works quite well.
+
+That said, Otsu’s method is not magic. If the image does not really contain two well-separated intensity populations, the chosen threshold may not be biologically meaningful.
+
+#### Local thresholding
+
+When the background changes across the image, a single global threshold may not work well everywhere. In that case, a **local** or **adaptive** threshold can be more useful.
+
+Instead of using one threshold for the entire image, local thresholding computes a different threshold in different neighborhoods. This allows the decision boundary to adapt to slow background variation.
+
+This approach can be very helpful in uneven images, but it also introduces another scale choice: the size of the local neighborhood.
+
+
 
 ## Recap
 
+::::{grid} 1 1 2 2
+:::{grid-item-card} **Intensity and contrast**
+Some adjustments only change the **display**, while others change the **pixel values**. That distinction matters because only the second type can affect measurements.
+:::
+
+:::{grid-item-card} **Smoothing and denoising**
+Smoothing reduces noise by combining neighboring pixel values, but too much smoothing can blur edges and remove small objects.
+:::
+
+:::{grid-item-card} **Edges and structure**
+Edge filters respond to **local intensity changes**, not just bright pixels. This makes them useful for revealing boundaries and outlines.
+:::
+
+:::{grid-item-card} **Background and thresholding**
+Uneven background can interfere with analysis. Background correction and thresholding help make objects stand out more clearly and separate foreground from background.
+:::
+::::
+
+```{admonition} Take-home message
+:class: important
+
+Classical image processing is useful because it is simple, interpretable, and often very effective. But every transformation should have a clear purpose and be checked against the original data.
+```
 
 
