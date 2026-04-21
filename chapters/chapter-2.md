@@ -528,11 +528,11 @@ This becomes a real problem for downstream analysis. For example, a global thres
 A common idea is to estimate the background as a **very smooth version of the image**. The reasoning is that the background usually changes slowly across space, while objects such as cells or nuclei are smaller and more localized. If we smooth the image strongly enough, much of the fine structure is suppressed and the broad background variation remains. Once we have a smooth estimate of the background, we can adjust it using two approaches.
 
 Subtractive correction
-: We subtract the estimated background from the original image: $I_{corr}(x, y) = I(x, y) - B(x, y)$ where $I(x, y)$ is the original image intensity at pixel $(x, y)$, $B(x, y)$ is the smooth background estimate, and $I_{corr}(x, y)$ is the corrected image. Use this when the background behaves like an additive offset or haze.
+: We subtract the estimated background from the original image: $$I_{corr}(x, y) = I(x, y) - B(x, y)$$ where $I(x, y)$ is the original image intensity at pixel $(x, y)$, $B(x, y)$ is the smooth background estimate, and $I_{corr}(x, y)$ is the corrected image. Use this when the background behaves like an additive offset or haze.
 
 (div-correction)=
 Divisive correction
-: We divide the original image by the estimated background: $I_{corr}(x,y) = I(x,y) / B(x,y)$. Use this when the background comes from uneven illumination of multiplicative shading.
+: We divide the original image by the estimated background: $$I_{corr}(x,y) = \frac{I(x,y)}{B(x,y)}.$$ Use this when the background comes from uneven illumination of multiplicative shading.
 
 
 The goal is not to remove all low-intensity pixels, but to remove the large-scale intensity trend so that objects are compared against a more even baseline.
