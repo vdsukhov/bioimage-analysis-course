@@ -517,6 +517,75 @@ Edge filters respond to rapid intensity changes, but noise also creates rapid lo
 
 ## Correcting uneven background
 
+In an ideal image, the background would be nicely uniform: dark where there is no signal, brighter only where real biological structures are present. In practice, that often does not happen. Many images have a background that changes across the field of view, so one side of the image may look brighter than the other even when the biology is similar.
+
+This kind of uneven background can come from several sources, such as uneven illumination, autofluorescence, optical artifacts, or out-of-focus light. Whatever the cause, the result is the same: objects become harder to judge against their surroundings. A cell that is easy to detect in one region may become much less obvious in another simply because the local background is different.
+
+This becomes a real problem for downstream analysis. For example, a global threshold may work well in one part of the image and fail in another. More broadly, uneven background can make intensity-based measurements less stable and harder to interpret.
+
+### One simple way to correct it
+
+A common idea is to estimate the background as a **very smooth version of the image**. The reasoning is that the background usually changes slowly across space, while objects such as cells or nuclei are smaller and more localized. If we smooth the image strongly enough, much of the fine structure is suppressed and the broad background variation remains. Once we have a smooth estimate of the background, we can adjust it using two approaches.
+
+Subtractive correction
+: We subtract the estimated background from the original image: $I_{corr}(x, y) = I(x, y) - B(x, y)$ where $I(x, y)$ is the original image intensity at pixel $(x, y)$, $B(x, y)$ is the smooth background estimate, and $I_{corr}(x, y)$ is the corrected image. Use this when the background behaves like an additive offset or haze.
+
+(div-correction)=
+Divisive correction
+: We divide the original image by the estimated background: $I_{corr}(x,y) = I(x,y) / B(x,y)$. Use this when the background comes from uneven illumination of multiplicative shading.
+
+
+The goal is not to remove all low-intensity pixels, but to remove the large-scale intensity trend so that objects are compared against a more even baseline.
+
+```{admonition} Warning
+:class: warning
+
+Background correction can be very helpful, but it is not just a cosmetic adjustment. It changes pixel values and may remove real signal if the estimated background is too aggressive. A good habit is to compare the raw image, the estimated background, and the corrected image side by side.
+```
+
+### Real case example
+
+Let’s look at a real-world case where an uneven background causes problems in downstream analysis. Here is the [link](https://forum.image.sc/t/how-to-remove-uneven-background-for-blob-detection-and-area-measurement/5455) to the original post.
+
+**Summary of the issue:**
+- The goal is to detect blobs and measure their area in microscopy-style images.
+- The images suffer from a strongly uneven background (e.g., illumination gradients or shading), which interferes with accurate detection.
+
+**Approach:**
+To address this, we estimate the background by smoothing the image, then apply a divisive correction to the original image to normalize the intensity variations.
+
+Here is the resized image from the original issue:
+```{code-cell}
+img = io.imread('https://github.com/vdsukhov/bioimage-analysis-course/blob/main/data/images/uneven-background.png?raw=true', as_gray=True)
+fig = plt.figure(figsize = (4, 4))
+plt.imshow(img, cmap='gray')
+plt.gca().axis('off')
+plt.show()
+```
+
+Now let's estimate background and use the [divisive correction](#div-correction):
+```{code-cell}
+back = filters.gaussian(img, sigma = 50)
+img_corr = img / back
+
+fig, axs = plt.subplots(1, 3, figsize=(10, 5))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0].imshow(img, cmap = 'gray')
+axs[0].set_title("Original image")
+axs[0].axis('off')
+
+axs[1].imshow(back, cmap = 'gray')
+axs[1].set_title("Estimated background")
+axs[1].axis('off')
+
+axs[2].imshow(img_corr, cmap = 'gray')
+axs[2].set_title("Corrected image")
+axs[2].axis('off')
+
+plt.show()
+```
+
 ## Thresholding images
 
 ## Recap
