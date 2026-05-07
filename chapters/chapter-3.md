@@ -112,9 +112,6 @@ Dilation does the opposite: it expands foreground objects. It adds pixels around
 This is useful when we want to fill small gaps, strengthen thin structures, or reconnect regions that should belong together. But just like erosion, dilation is not free — if it is too strong, nearby objects may merge and boundaries may become less precise.
 
 
-::::{tab-set}
-
-:::{tab-item} Abstract example
 ```{code-cell}
 A = np.array(
     [
@@ -134,22 +131,12 @@ fig, axs = plt.subplots(1, 2, figsize = (6, 4))
 
 axs[0].imshow(A.astype(int), cmap='gray')
 axs[0].axis('off')
-axs[0].set_title("Before erosion")
+axs[0].set_title("Before dilation")
 
 axs[1].imshow(dilated.astype(int), cmap='gray')
 axs[1].axis('off')
-axs[1].set_title("After erosion")
+axs[1].set_title("After dilation")
 ```
-
-:::
-
-:::{tab-item} Example with simple shape
-```{code-cell}
-```
-:::
-
-::::
-
 
 ## Opening
 
@@ -180,11 +167,11 @@ fig, axs = plt.subplots(1, 2, figsize = (6, 4))
 
 axs[0].imshow(A.astype(int), cmap='gray')
 axs[0].axis('off')
-axs[0].set_title("Before erosion")
+axs[0].set_title("Before opening")
 
 axs[1].imshow(opened.astype(int), cmap='gray')
 axs[1].axis('off')
-axs[1].set_title("After erosion")
+axs[1].set_title("After opening")
 ```
 
 The small isolated pixel disappears because it is too small to survive erosion. The larger object remains, since it is big enough to persist through the operation. This is the typical effect of opening: it removes small foreground features while preserving larger ones.
@@ -210,6 +197,7 @@ A = np.array(
     ],
     dtype=bool
 )
+A = np.pad(A, pad_width=1, mode='constant', constant_values=0)
 
 footprint = np.ones((3, 3), dtype=bool)
 closed = closing(A, footprint=footprint)
@@ -218,11 +206,11 @@ fig, axs = plt.subplots(1, 2, figsize = (6, 4))
 
 axs[0].imshow(A.astype(int), cmap='gray')
 axs[0].axis('off')
-axs[0].set_title("Before erosion")
+axs[0].set_title("Before closing")
 
 axs[1].imshow(closed.astype(int), cmap='gray')
 axs[1].axis('off')
-axs[1].set_title("After erosion")
+axs[1].set_title("After closing")
 ```
 
 ```{admonition} Rule of thumb
