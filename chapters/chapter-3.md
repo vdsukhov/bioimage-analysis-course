@@ -34,9 +34,24 @@ This makes morphology especially useful after thresholding. A threshold gives us
 
 ## Structuring elements
 
+:::{figure}
+:label: fig-se
+:align: center
+
+<a href="images/chapter-3/Slide12.JPG" target="_blank" rel="noopener noreferrer">
+  <img src="images/chapter-3/Slide12.JPG" alt="pixel-values">
+</a>
+
+Structuring elements
+:::
+
 Morphological operations are defined by a small local pattern called a structuring element. You can think of it as a tiny template that moves across the image and checks the neighborhood around each pixel. The result of the operation depends on both the image and the shape of this template.
 
 Structuring elements can have different shapes and sizes, such as a square or a disk. A larger structuring element produces a stronger effect, while a smaller one makes a more local change. This means the choice of structuring element is part of the analysis: it should be matched to the size and shape of the structures you want to preserve or remove.
+
+:::{figure} ./images/chapter-3/fit-hit-1080.mp4
+Video illustration for positioning of structuring element
+:::
 
 ## Erosion
 
@@ -138,6 +153,17 @@ axs[1].axis('off')
 axs[1].set_title("After dilation")
 ```
 
+:::{figure}
+:label: fig-erosion-dilation
+:align: center
+
+<a href="images/chapter-3/Slide15.JPG" target="_blank" rel="noopener noreferrer">
+  <img src="images/chapter-3/Slide15.JPG" alt="pixel-values">
+</a>
+
+Illustration of morphology operations
+:::
+
 ## Opening
 
 Opening means applying erosion first and then dilation. At first that may sound like the two operations would simply cancel each other out, but in practice they do not. Small foreground objects or thin protrusions may disappear during erosion and then fail to come back during dilation.
@@ -222,3 +248,23 @@ axs[1].set_title("After closing")
 
 ## Filling holes and removing small objects
 
+After thresholding, a binary mask is often close to useful, but not quite there yet. Some objects may contain small holes inside them, and tiny isolated foreground specks may appear in the background. These imperfections are very common, especially when the image is noisy or the threshold is not perfect. In practice, a lot of segmentation cleanup comes down to handling exactly these two problems.
+
+Two especially useful operations are filling holes and removing small objects. They are simple, but they can make a binary mask much easier to interpret and measure.
+
+### Filling holes
+
+A hole is a background region that is completely surrounded by foreground. In a binary mask, this appears as a dark region inside an otherwise solid object.
+
+Whether a hole should be filled depends on the biological question. Sometimes a hole is just an artifact of thresholding and should be removed. For example, a nucleus may appear as a ring-like object even though we want to treat it as one solid region. In that case, filling holes is a reasonable cleanup step.
+
+The important idea is that hole filling changes only enclosed background regions. It does not expand the object outward, but simply makes it solid inside.
+
+
+### Removing small objects
+
+A second common problem is the presence of tiny foreground components that are unlikely to be real structures. These often come from noise, dust, uneven staining, or thresholding errors. If they are much smaller than the objects we actually care about, it makes sense to remove them.
+
+This is usually done by identifying connected foreground components and discarding those below a chosen size threshold. In other words, instead of modifying boundaries locally, we look at complete objects and ask whether they are large enough to keep.
+
+That makes this operation especially practical: it is often a direct way to remove obvious false positives without changing the main objects too much.
