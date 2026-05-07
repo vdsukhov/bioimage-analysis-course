@@ -589,6 +589,11 @@ plt.show()
 
 ## Thresholding images
 
+```{code-cell}
+:tags: [remove-cell]
+img = io.imread('https://github.com/vdsukhov/bioimage-analysis-course/blob/main/data/images/dapi.png?raw=true')
+```
+
 Many image-processing steps still leave us with a grayscale image: each pixel has an intensity value, but we have not yet decided which pixels belong to an object and which belong to the background. **Thresholding** is one of the simplest ways to make that decision.
 
 The idea is straightforward: choose an intensity threshold, then classify pixels based on whether they are above or below it. This turns a grayscale image into a **binary image**, where pixels are usually labeled as either foreground or background.
@@ -625,6 +630,101 @@ This works well when:
 
 A global threshold is easy to apply and easy to interpret, which is why it is often the first method to try.
 
+
+::::{tab-set}
+
+:::{tab-item} Generic example 1
+```{code-cell}
+from skimage import data
+
+camera = data.camera()
+
+# global manual threshold
+th = 120
+
+mask = camera > th
+
+fig, axs = plt.subplots(2, 2, figsize = (8, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0][0].imshow(camera, cmap='gray')
+axs[0][0].set_title('Original image')
+axs[0][0].axis('off')
+
+axs[0][1].imshow(mask, cmap='gray')
+axs[0][1].set_title('Binary image')
+axs[0][1].axis('off')
+
+axs[1][0].hist(camera.ravel(), bins=256)
+axs[1][0].set_title('Histogram')
+axs[1][0].axvline(th, color='blue')
+axs[1][0].get_yaxis().set_visible(False)
+
+fig.delaxes(axs[1][1])
+```
+:::
+
+:::{tab-item} Generic example 2
+```{code-cell}
+from skimage import data
+
+page = data.page()
+
+# global manual threshold
+th = 120
+
+mask = page > th
+
+fig, axs = plt.subplots(2, 2, figsize = (8, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0][0].imshow(page, cmap='gray')
+axs[0][0].set_title('Original image')
+axs[0][0].axis('off')
+
+axs[0][1].imshow(mask, cmap='gray')
+axs[0][1].set_title('Binary image')
+axs[0][1].axis('off')
+
+axs[1][0].hist(page.ravel(), bins=256)
+axs[1][0].set_title('Histogram')
+axs[1][0].axvline(th, color='blue')
+axs[1][0].get_yaxis().set_visible(False)
+
+fig.delaxes(axs[1][1])
+```
+:::
+
+:::{tab-item} Microscopy image
+```{code-cell}
+# global manual threshold
+th = 120
+
+mask = img > th
+
+fig, axs = plt.subplots(2, 2, figsize = (7, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0][0].imshow(img, cmap='gray')
+axs[0][0].set_title('Original image')
+axs[0][0].axis('off')
+
+axs[0][1].imshow(mask, cmap='gray')
+axs[0][1].set_title('Binary image')
+axs[0][1].axis('off')
+
+axs[1][0].hist(img.ravel(), bins=256)
+axs[1][0].set_title('Histogram')
+axs[1][0].axvline(th, color='blue')
+axs[1][0].get_yaxis().set_visible(False)
+
+fig.delaxes(axs[1][1])
+```
+:::
+
+::::
+
+
 #### Otsu thresholding
 
 A popular automatic choice is **Otsu’s method**. Instead of choosing the threshold by hand, Otsu’s method tries to find a value that best separates the image into two intensity groups.
@@ -633,13 +733,187 @@ You can think of it as looking for a threshold that splits the histogram into ba
 
 That said, Otsu’s method is not magic. If the image does not really contain two well-separated intensity populations, the chosen threshold may not be biologically meaningful.
 
-#### Local thresholding
+::::{tab-set}
 
-When the background changes across the image, a single global threshold may not work well everywhere. In that case, a **local** or **adaptive** threshold can be more useful.
 
-Instead of using one threshold for the entire image, local thresholding computes a different threshold in different neighborhoods. This allows the decision boundary to adapt to slow background variation.
+:::{tab-item} Generic example 1
+```{code-cell}
+from skimage.filters import threshold_otsu
 
-This approach can be very helpful in uneven images, but it also introduces another scale choice: the size of the local neighborhood.
+
+th = threshold_otsu(camera)
+
+mask = camera > th
+
+fig, axs = plt.subplots(2, 2, figsize = (8, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0][0].imshow(camera, cmap='gray')
+axs[0][0].set_title('Original image')
+axs[0][0].axis('off')
+
+axs[0][1].imshow(mask, cmap='gray')
+axs[0][1].set_title('Binary image')
+axs[0][1].axis('off')
+
+axs[1][0].hist(camera.ravel(), bins=256)
+axs[1][0].set_title('Histogram')
+axs[1][0].axvline(th, color='blue')
+axs[1][0].get_yaxis().set_visible(False)
+
+fig.delaxes(axs[1][1])
+```
+:::
+
+:::{tab-item} Generic example 2
+```{code-cell}
+from skimage.filters import threshold_otsu
+
+
+th = threshold_otsu(page)
+
+mask = page > th
+
+fig, axs = plt.subplots(2, 2, figsize = (8, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0][0].imshow(page, cmap='gray')
+axs[0][0].set_title('Original image')
+axs[0][0].axis('off')
+
+axs[0][1].imshow(mask, cmap='gray')
+axs[0][1].set_title('Binary image')
+axs[0][1].axis('off')
+
+axs[1][0].hist(page.ravel(), bins=256)
+axs[1][0].set_title('Histogram')
+axs[1][0].axvline(th, color='blue')
+axs[1][0].get_yaxis().set_visible(False)
+
+fig.delaxes(axs[1][1])
+```
+:::
+
+:::{tab-item} Microscopy image
+```{code-cell}
+th = threshold_otsu(img)
+
+mask = img > th
+
+fig, axs = plt.subplots(2, 2, figsize = (7, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0][0].imshow(img, cmap='gray')
+axs[0][0].set_title('Original image')
+axs[0][0].axis('off')
+
+axs[0][1].imshow(mask, cmap='gray')
+axs[0][1].set_title('Binary image')
+axs[0][1].axis('off')
+
+axs[1][0].hist(img.ravel(), bins=256)
+axs[1][0].set_title('Histogram')
+axs[1][0].axvline(th, color='blue')
+axs[1][0].get_yaxis().set_visible(False)
+
+fig.delaxes(axs[1][1])
+```
+:::
+
+::::
+
+
+Otsu's method automatically finds a threshold that minimizes the variance within each group. The chosen value depends on the image histogram — if the histogram has two clear peaks, the result is usually meaningful. If not, the threshold may not separate foreground and background as expected.
+
+
+#### Local (adaptive) thresholding
+
+When a global threshold does not work well because object intensity varies across the image, **local thresholding** can help. Instead of using a single threshold for the whole image, the threshold is computed separately for each pixel based on its local neighborhood.
+
+This means that bright regions and dim regions can each be thresholded appropriately, without needing to preprocess the image first.
+
+::::{tab-set}
+
+:::{tab-item} Generic example 1
+```{code-cell}
+from skimage.filters import threshold_local
+
+
+th = threshold_local(camera, block_size=35, offset=10)
+
+mask = camera > th
+
+fig, axs = plt.subplots(1, 2, figsize = (8, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0].imshow(camera, cmap='gray')
+axs[0].set_title('Original image')
+axs[0].axis('off')
+
+axs[1].imshow(mask, cmap='gray')
+axs[1].set_title('Binary image')
+axs[1].axis('off')
+```
+:::
+
+:::{tab-item} Generic example 2
+```{code-cell}
+from skimage.filters import threshold_local
+
+
+th = threshold_local(page, block_size=35, offset=10)
+
+mask = page > th
+
+fig, axs = plt.subplots(1, 2, figsize = (8, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0].imshow(page, cmap='gray')
+axs[0].set_title('Original image')
+axs[0].axis('off')
+
+axs[1].imshow(mask, cmap='gray')
+axs[1].set_title('Binary image')
+axs[1].axis('off')
+```
+:::
+
+:::{tab-item} Microscopy image
+```{code-cell}
+th = threshold_local(img, block_size=35, offset=5)
+
+mask = img > th
+
+fig, axs = plt.subplots(1, 2, figsize = (8, 8))
+fig.subplots_adjust(wspace=0.03)
+
+axs[0].imshow(img, cmap='gray')
+axs[0].set_title('Original image')
+axs[0].axis('off')
+
+axs[1].imshow(mask, cmap='gray')
+axs[1].set_title('Binary image')
+axs[1].axis('off')
+```
+:::
+
+::::
+
+Here `block_size` controls the size of the local neighborhood used to compute the threshold at each pixel. A smaller block adapts more aggressively to local variations, while a larger block behaves more like a global threshold. The `offset` subtracts a constant from each local threshold, helping to avoid including too much background.
+
+
+
+::::{tab-set}
+
+:::{tab-item} Task 1
+Try replacing `threshold_local` with an approach based on [uneven background correction](div-correction). Estimate the background, correct the image, and then apply a global threshold to obtain the binary mask.
+:::
+
+:::{tab-item} Task 2
+Create your own simple local-thresholding method. Divide the image into smaller tiles, apply `threshold_otsu` to each tile separately, and then merge the thresholded tiles into a single binary image.
+:::
+
+::::
 
 
 
