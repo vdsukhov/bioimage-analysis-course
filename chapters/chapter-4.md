@@ -1,10 +1,45 @@
-
+---
 kernelspec:
     name: python3
     display_name: 'Python 3'
+---
 
 
 # Classical segmentations
+
+:::{note} Generic imports for our python code
+:class: dropdown
+
+```{code-cell}
+from skimage import io, filters, util
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.style.use('dark_background')
+
+```
+:::
+
+
+```{code-cell}
+:tags: [remove-cell]
+def inspect_image(img, name="img"):
+    print(f"Name: {name}")
+    print(f"Type: {type(img)}")
+    print(f"Shape: {img.shape}")
+    print(f"Dtype: {img.dtype}")
+    print(f"Min: {img.min()}")
+    print(f"Max: {img.max()}")
+    print(f"Dimensions: {img.ndim}")
+
+    if img.ndim == 2:
+        print("Interpretation: grayscale image")
+    elif img.ndim == 3:
+        print(f"Interpretation: image with {img.shape[-1]} channels")
+    else:
+        print("Interpretation: higher-dimensional image")
+```
+
 
 ## From binary masks to segmented objects
 
@@ -30,6 +65,47 @@ Once we have a binary mask, the next step is often to identify which foreground 
 
 The result is no longer just a mask of `True` and `False` values. Instead, each object gets its own integer label, which makes it possible to count objects and analyze them one by one.
 
+```{code-cell}
+
+from skimage import measure
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Toy binary mask
+mask = np.array(
+    [
+        [0, 0, 1, 1, 0, 0, 0, 1],
+        [0, 0, 1, 1, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 1, 1, 0],
+        [1, 1, 0, 0, 0, 1, 1, 0],
+        [1, 1, 0, 0, 0, 0, 0, 0],
+    ],
+    dtype=bool
+)
+
+# Label connected foreground regions
+labels = measure.label(mask, connectivity=2)
+
+# Count objects (background is label 0)
+n_objects = labels.max()
+
+print("Number of objects:", n_objects)
+print(labels)
+
+# Visualize
+fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+
+axs[0].imshow(mask, cmap="gray")
+axs[0].set_title("Binary mask")
+axs[0].axis("off")
+
+axs[1].imshow(labels, cmap="gnuplot")
+axs[1].set_title("Labeled objects")
+axs[1].axis("off")
+
+plt.show()
+```
+
 ### From one foreground mask to many objects
 
 This is an important conceptual shift. In a binary mask, all foreground pixels are treated the same way. After connected-component labeling, the foreground is split into separate regions, and each region is treated as an individual object.
@@ -44,6 +120,37 @@ The key idea here is **connectivity**. Two foreground pixels are considered part
 * **8-connectivity**: diagonal neighbors also count as connected
 
 This choice can affect the result. With 8-connectivity, diagonally touching pixels may be grouped into the same object, while with 4-connectivity they may remain separate.
+
+```{code-cell}
+mask = np.array(
+    [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+    ],
+    dtype=bool
+)
+
+labels_4 = measure.label(mask, connectivity=1)
+labels_8 = measure.label(mask, connectivity=2)
+
+fig, axs = plt.subplots(1, 3, figsize=(9, 3))
+
+axs[0].imshow(mask, cmap="gray")
+axs[0].set_title("Binary mask")
+axs[0].axis("off")
+
+axs[1].imshow(labels_4, cmap="gnuplot")
+axs[1].set_title("4-connectivity")
+axs[1].axis("off")
+
+axs[2].imshow(labels_8, cmap="gnuplot")
+axs[2].set_title("8-connectivity")
+axs[2].axis("off")
+
+plt.tight_layout()
+plt.show()
+```
 
 ### Why labeling is useful
 
@@ -61,11 +168,76 @@ The **distance transform** takes a binary image and, for each foreground pixel, 
 
 This turns a binary mask into a new kind of image: not just foreground versus background, but a map of how far each foreground location lies from the object boundary.
 
+```{code-cell}
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import ndimage
+
+mask = np.array(
+    [
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1, 0, 0],
+        [0, 1, 1, 1, 1, 1, 0],
+        [0, 1, 1, 1, 1, 1, 0],
+        [0, 1, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+    ],
+    dtype=bool
+)
+
+dist = ndimage.distance_transform_edt(mask)
+
+fig, axs = plt.subplots(1, 2, figsize = (10, 5))
+
+axs[0].imshow(mask, cmap='gray')
+axs[0].axis('off')
+
+axs[1].imshow(dist, cmap='gray')
+axs[1].axis('off')
+
+for (i, j), z in np.ndenumerate(dist):
+    c = 'w' if z < 1 else 'k'
+    plt.text(j, i, str(round(z, 2)), color=c, ha='center', va='center', fontdict={'size': 10})
+
+
+plt.tight_layout()
+plt.show()
+```
+
 ### Why this is useful
 
 A distance-transformed image gives us more internal structure than the original binary mask. In particular, the centers of objects often appear as local maxima, because those pixels are farthest from the background.
 
 This is especially useful when objects touch each other. In a binary mask, two touching cells may look like one merged region. But in the distance map, each cell may still contain its own peak, which gives us a clue that more than one object is present.
+
+
+```{code-cell}
+H, W = 120, 180
+y, x = np.ogrid[:H, :W]
+
+mask = np.zeros((H, W), dtype=bool)
+
+circle1 = (x - 60)**2 + (y - 60)**2 <= 35**2
+circle2 = (x - 105)**2 + (y - 60)**2 <= 35**2
+
+mask[circle1 | circle2] = True
+
+dist = ndimage.distance_transform_edt(mask)
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+
+axs[0].imshow(mask, cmap="gray")
+axs[0].set_title("Touching objects in binary mask")
+axs[0].axis("off")
+
+axs[1].imshow(dist, cmap="viridis")
+axs[1].set_title("Distance transform")
+axs[1].axis("off")
+
+plt.tight_layout()
+plt.show()
+```
 
 ### A useful geometric intuition
 
@@ -73,7 +245,20 @@ You can think of the distance transform as asking: *if I start at this foregroun
 
 Because of that, the distance transform often highlights the approximate centers of objects, even when their boundaries are touching.
 
-### Why it often comes before watershed
+```{code-cell}
+from skimage.feature import peak_local_max
+
+coords = peak_local_max(dist, min_distance=20)
+
+fig, ax = plt.subplots(figsize=(5, 4))
+ax.imshow(dist, cmap="viridis")
+ax.scatter(coords[:, 1], coords[:, 0], c="red", s=40)
+ax.set_title("Local maxima of distance transform")
+ax.axis("off")
+plt.show()
+```
+
+### Why it often comes before classical watershed segmentation
 
 On its own, the distance transform is not a segmentation. It does not assign labels or separate objects directly. What it does provide is a very useful intermediate representation: a smooth map whose peaks can be used as markers for individual objects.
 
@@ -107,6 +292,69 @@ So the workflow is often:
 2. compute the distance transform,
 3. find markers in the distance map,
 4. apply watershed to split touching objects.
+
+```{code-cell}
+import numpy as np
+import matplotlib.pyplot as plt
+
+from scipy import ndimage
+from skimage.feature import peak_local_max
+from skimage.segmentation import watershed
+from skimage import measure
+
+# Create a toy binary mask with two touching circles
+H, W = 120, 180
+y, x = np.ogrid[:H, :W]
+
+mask = np.zeros((H, W), dtype=bool)
+
+circle1 = (x - 60)**2 + (y - 60)**2 <= 35**2
+circle2 = (x - 105)**2 + (y - 60)**2 <= 35**2
+
+mask[circle1 | circle2] = True
+
+# Distance transform
+dist = ndimage.distance_transform_edt(mask)
+
+# Find local maxima in the distance map
+coords = peak_local_max(dist, min_distance=20, labels=mask)
+
+# Turn peak coordinates into marker image
+markers = np.zeros_like(mask, dtype=int)
+markers[tuple(coords.T)] = np.arange(1, len(coords) + 1)
+
+# Optional: label markers explicitly
+markers = measure.label(markers)
+
+# Apply watershed on the negative distance map
+labels_ws = watershed(-dist, markers, mask=mask)
+
+# Visualize
+fig, axs = plt.subplots(1, 4, figsize=(14, 4))
+fig.subplots_adjust(wspace=0.05)
+
+axs[0].imshow(mask, cmap="gray")
+axs[0].set_title("Binary mask")
+axs[0].axis("off")
+
+axs[1].imshow(dist, cmap="viridis")
+axs[1].set_title("Distance transform")
+axs[1].axis("off")
+
+axs[2].imshow(dist, cmap="viridis")
+axs[2].scatter(coords[:, 1], coords[:, 0], c="red", s=40)
+axs[2].set_title("Markers")
+axs[2].axis("off")
+
+axs[3].imshow(labels_ws, cmap="gnuplot")
+axs[3].set_title("Watershed result")
+axs[3].axis("off")
+
+plt.tight_layout()
+plt.show()
+```
+
+Why `-dist`? Because the distance transform has high values at object centers, but watershed conceptually floods from low points. By negating the distance map, the object centers become valleys, so watershed can grow regions outward from them.
 
 ### Why markers matter
 
@@ -166,6 +414,51 @@ In `scikit-image`, a common way to measure labeled objects is with `regionprops`
 * `regionprops_table` returns the measurements in a tabular format, which is especially useful when we want to convert the results into a `pandas` DataFrame or export them for later analysis.
 
 Both functions work on a labeled image, and both can optionally use the original intensity image if we want to include intensity-based measurements.
+
+```{code-cell}
+from skimage.measure import regionprops_table
+import pandas as pd
+
+props = regionprops_table(
+    labels_ws,
+    properties=("label", "area", "centroid", "bbox", "perimeter")
+)
+
+df = pd.DataFrame(props)
+df
+
+```
+
+
+```{code-cell}
+from skimage.measure import regionprops
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+
+regions = regionprops(labels_ws)
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.imshow(mask, cmap="gray")
+ax.set_title("Bounding boxes and centroids")
+ax.axis("off")
+
+for region in regions:
+    minr, minc, maxr, maxc = region.bbox
+    cy, cx = region.centroid
+
+    rect = Rectangle(
+        (minc, minr),
+        maxc - minc,
+        maxr - minr,
+        fill=False,
+        edgecolor="red",
+        linewidth=2
+    )
+    ax.add_patch(rect)
+    ax.plot(cx, cy, "bo", markersize=6)
+
+plt.show()
+```
 
 ### Why this step matters
 
